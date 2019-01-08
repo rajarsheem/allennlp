@@ -299,15 +299,15 @@ class _ElmoCharacterEncoder(torch.nn.Module):
                  weight_file: str,
                  requires_grad: bool = False) -> None:
         super(_ElmoCharacterEncoder, self).__init__()
-
         with open(cached_path(options_file), 'r') as fin:
             self._options = json.load(fin)
-        self._weight_file = weight_file
 
+        self._weight_file = weight_file
         self.output_dim = self._options['lstm']['projection_dim']
         self.requires_grad = requires_grad
 
-        self._load_weights()
+        if weight_file:
+            self._load_weights()
 
         # Cache the arrays for use in forward -- +1 due to masking.
         self._beginning_of_sentence_characters = torch.from_numpy(
@@ -551,7 +551,9 @@ class _ElmoBiLm(torch.nn.Module):
                                    memory_cell_clip_value=options['lstm']['cell_clip'],
                                    state_projection_clip_value=options['lstm']['proj_clip'],
                                    requires_grad=requires_grad)
-        self._elmo_lstm.load_weights(weight_file)
+
+        if weight_file:
+            self._elmo_lstm.load_weights(weight_file)
         # Number of representation layers including context independent layer
         self.num_layers = options['lstm']['n_layers'] + 1
 
